@@ -2,286 +2,1052 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimal Calorie Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Calorie Tracker</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f1115">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tracker">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        darkBg: '#0f1115',
+                        cardBg: '#181b21',
+                        cardBorder: '#262a33',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-main: #e0e0e0;
-            --text-muted: #888888;
-            --accent: #ffffff;
-            --border: #333333;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
+            background-color: #0f1115;
+            color: #e2e8f0;
+            overscroll-behavior-y: none;
+            -webkit-tap-highlight-color: transparent;
         }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
+        .glass-panel {
+            background: rgba(24, 27, 33, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 12px;
+        .brand-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
         }
-
-        h1 {
-            font-size: 1.5rem;
-            margin: 0;
-            color: var(--accent);
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            text-align: center;
-        }
-
-        .stat-box {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-        }
-
-        .stat-value {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: var(--accent);
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        input, button {
-            width: 100%;
-            padding: 10px 12px;
-            background-color: var(--bg-color);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text-main);
-            font-size: 0.95krem;
-            box-sizing: border-box;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        button {
-            background-color: var(--accent);
-            color: var(--bg-color);
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        .log-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .log-item:last-child {
-            border-bottom: none;
-        }
-
-        .log-info span {
-            display: block;
-        }
-
-        .food-name {
-            font-weight: 500;
-        }
-
-        .food-cals {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .delete-btn {
-            background: none;
-            border: none;
-            color: #ff5555;
-            cursor: pointer;
-            font-size: 1rem;
-            width: auto;
-            padding: 4px 8px;
-        }
+        .pulse-btn:active { transform: scale(0.96); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
+<body class="pb-24 antialiased selection:bg-indigo-500/30">
 
-    <div class="container">
-        <header>
-            <h1>Tracker</h1>
-            <span id="current-date" style="font-size: 0.85rem; color: var(--text-muted);"></span>
-        </header>
+    <header class="fixed top-0 left-0 right-0 z-40 glass-panel border-b border-cardBorder/50 px-5 py-4 flex justify-between items-center">
+        <div>
+            <h1 class="text-xl font-bold text-white tracking-tight">Today</h1>
+            <span id="header-date" class="text-xs text-indigo-400 font-medium tracking-wide uppercase"></span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span id="sync-status" class="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Online</span>
+            <div class="w-10 h-10 rounded-full brand-gradient flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <i class="fa-solid fa-user text-sm text-white"></i>
+            </div>
+        </div>
+    </header>
 
-        <!-- Summary Card -->
-        <div class="card">
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <div class="stat-value" id="total-cals">0</div>
-                    <div class="stat-label">Calories Consumed</div>
+    <main class="w-full max-w-md mx-auto px-4 pt-24 space-y-6">
+        
+        <!-- VIEW 1: HOME/DASHBOARD -->
+        <div id="view-home" class="space-y-5">
+            
+            <!-- Summary Dashboard -->
+            <div class="glass-panel p-5 rounded-3xl relative overflow-hidden shadow-xl shadow-black/20">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                
+                <div class="flex justify-between items-end mb-4 relative z-10">
+                    <div>
+                        <span class="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-1">Calories Consumed</span>
+                        <div class="flex items-baseline gap-1">
+                            <span id="total-cals" class="text-4xl font-black text-white tracking-tighter">0</span>
+                            <span class="text-sm text-gray-500 font-medium">/ <span id="goal-cals">2500</span> kcal</span>
+                        </div>
+                    </div>
+                    <div id="cals-left-label" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        2500 kcal left
+                    </div>
                 </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="goal-cals">2500</div>
-                    <div class="stat-label">Daily Goal</div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-darkBg/80 h-3.5 rounded-full overflow-hidden p-0.5 border border-cardBorder relative z-10">
+                    <div id="calorie-progress-bar" class="brand-gradient h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(99,102,241,0.5)]" style="width: 0%"></div>
+                </div>
+
+                <!-- Macros UI -->
+                <div class="grid grid-cols-3 gap-3 mt-5 relative z-10">
+                    <div class="bg-darkBg/60 p-3 rounded-2xl border border-cardBorder/50 flex flex-col justify-between">
+                        <div class="flex justify-between text-[10px] uppercase font-bold mb-2"><span class="text-indigo-400">Protein</span><span id="prot-text" class="text-gray-400">0/150g</span></div>
+                        <div class="w-full bg-darkBg h-1.5 rounded-full overflow-hidden"><div id="prot-bar" class="bg-indigo-500 h-full w-0 rounded-full transition-all duration-500"></div></div>
+                    </div>
+                    <div class="bg-darkBg/60 p-3 rounded-2xl border border-cardBorder/50 flex flex-col justify-between">
+                        <div class="flex justify-between text-[10px] uppercase font-bold mb-2"><span class="text-emerald-400">Carbs</span><span id="carb-text" class="text-gray-400">0/250g</span></div>
+                        <div class="w-full bg-darkBg h-1.5 rounded-full overflow-hidden"><div id="carb-bar" class="bg-emerald-500 h-full w-0 rounded-full transition-all duration-500"></div></div>
+                    </div>
+                    <div class="bg-darkBg/60 p-3 rounded-2xl border border-cardBorder/50 flex flex-col justify-between">
+                        <div class="flex justify-between text-[10px] uppercase font-bold mb-2"><span class="text-rose-400">Fat</span><span id="fat-text" class="text-gray-400">0/60g</span></div>
+                        <div class="w-full bg-darkBg h-1.5 rounded-full overflow-hidden"><div id="fat-bar" class="bg-rose-500 h-full w-0 rounded-full transition-all duration-500"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action Hub -->
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="openModal('camera-modal')" class="glass-panel p-4 rounded-3xl flex flex-col items-center justify-center gap-3 text-center border border-indigo-500/20 hover:border-indigo-500/50 transition-all pulse-btn group bg-indigo-500/5 hover:bg-indigo-500/10">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                        <i class="fa-solid fa-camera-retro text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-sm font-bold block text-indigo-100 mb-0.5">AI Meal Scan</span>
+                        <span class="text-[10px] text-indigo-300/70 uppercase tracking-wider font-semibold">Snap & Log</span>
+                    </div>
+                </button>
+
+                <button onclick="openModal('manual-modal')" class="glass-panel p-4 rounded-3xl flex flex-col items-center justify-center gap-3 text-center border border-purple-500/20 hover:border-purple-500/50 transition-all pulse-btn group bg-purple-500/5 hover:bg-purple-500/10">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-300 flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+                        <i class="fa-solid fa-keyboard text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-sm font-bold block text-purple-100 mb-0.5">Manual Entry</span>
+                        <span class="text-[10px] text-purple-300/70 uppercase tracking-wider font-semibold">Type or Search</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Water Tracking -->
+            <div class="glass-panel p-5 rounded-3xl">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-200">Hydration</h3>
+                        <span class="text-xs text-gray-500 font-medium">Goal: 8 glasses (~2 Propel bottles)</span>
+                    </div>
+                    <span id="water-count" class="text-xl font-bold text-cyan-400">0 / 8</span>
+                </div>
+                <div class="flex justify-between items-center gap-1.5" id="water-glasses">
+                    <!-- JavaScript generates glasses here -->
+                </div>
+            </div>
+
+            <!-- Today's Log Feed -->
+            <div class="pt-2 pb-6">
+                <div class="flex justify-between items-end mb-4 px-1">
+                    <h3 class="text-sm font-bold text-gray-200">Today's Logs</h3>
+                    <span id="log-count" class="text-xs font-semibold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full">0 items</span>
+                </div>
+                <div id="log-list" class="space-y-3">
+                    <div class="text-center py-6 text-gray-400 text-sm">
+                        <i class="fa-solid fa-spinner fa-spin mb-2"></i><br>Loading...
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Input Form Card -->
-        <div class="card">
-            <form id="log-form">
-                <input type="text" id="food-input" placeholder="Food item (e.g., Chicken breast, Rice)" required autocomplete="off">
-                <input type="number" id="cals-input" placeholder="Calories" required min="0">
-                <button type="submit">Add Entry</button>
-            </form>
+        <!-- VIEW 2: HISTORY -->
+        <div id="view-history" class="space-y-5 hidden">
+            <div class="glass-panel p-5 rounded-3xl border border-cardBorder">
+                <h3 class="text-lg font-bold text-white mb-1">Nutrition Timeline</h3>
+                <p class="text-xs text-gray-400 mb-5 font-medium leading-relaxed">Review past meal logs stored securely in your database or local cache.</p>
+                
+                <div id="history-list" class="space-y-3">
+                    <div class="text-center py-8 text-gray-400 text-sm">
+                        <i class="fa-solid fa-spinner fa-spin mb-3 text-xl text-indigo-400"></i><br>Loading history...
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Log History Card -->
-        <div class="card">
-            <h3 style="margin-top: 0; font-size: 1rem; color: var(--text-muted);">Today's Log</h3>
-            <div id="log-list">
-                <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">No entries yet today.</p>
+        <!-- VIEW 3: SETTINGS -->
+        <div id="view-settings" class="space-y-5 hidden">
+            <!-- API Key Settings -->
+            <div class="glass-panel p-5 rounded-3xl border border-cardBorder">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center"><i class="fa-solid fa-key"></i></div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">AI Configuration</h3>
+                        <p class="text-[11px] text-gray-400 uppercase tracking-wider font-semibold">Gemini API Key</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <input type="password" id="api-key-input" placeholder="Paste your Gemini API key here" class="w-full px-4 py-3.5 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-purple-500 transition-colors">
+                    <button onclick="saveApiKey()" class="w-full py-3.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-purple-500/25 pulse-btn transition-colors">
+                        Save API Key
+                    </button>
+                    <p class="text-[11px] text-gray-500 text-center leading-relaxed">Your key is stored securely on your local device and used only for AI food scanning.</p>
+                </div>
+            </div>
+
+            <!-- TDEE Calculator Settings -->
+            <div class="glass-panel p-5 rounded-3xl border border-cardBorder">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-calculator"></i></div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Goal Calculator</h3>
+                        <p class="text-[11px] text-gray-400 uppercase tracking-wider font-semibold">TDEE & Macros</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">Age</label>
+                            <input type="number" id="calc-age" placeholder="25" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">Gender</label>
+                            <select id="calc-gender" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 appearance-none">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">Weight (lbs)</label>
+                            <input type="number" id="calc-weight" placeholder="170" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">Height (in)</label>
+                            <input type="number" id="calc-height" placeholder="70" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">Activity Level</label>
+                        <select id="calc-activity" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 appearance-none">
+                            <option value="1.2">Sedentary (Office Job)</option>
+                            <option value="1.375">Light Exercise (1-2 days/wk)</option>
+                            <option value="1.55">Moderate Exercise (3-5 days/wk)</option>
+                            <option value="1.725">Heavy Exercise (6-7 days/wk)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">Goal</label>
+                        <select id="calc-goal-type" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 appearance-none">
+                            <option value="maintain">Maintain Weight</option>
+                            <option value="lose">Lose Weight (-500 kcal)</option>
+                            <option value="gain">Build Muscle (+300 kcal)</option>
+                        </select>
+                    </div>
+                    <button onclick="calculateAndSaveTDEE()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/25 pulse-btn mt-2 transition-colors">
+                        Calculate & Save Goals
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- CAMERA CAPTURE MODAL -->
+    <div id="camera-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="text-center w-full max-w-sm px-6">
+            <div class="w-20 h-20 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(99,102,241,0.3)]">
+                <i class="fa-solid fa-camera text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">Snap Your Meal</h2>
+            <p class="text-sm text-gray-400 mb-8 leading-relaxed">Take a photo of your food. AI will estimate the calories and macros automatically.</p>
+            
+            <div class="space-y-4">
+                <label class="block w-full py-4 brand-gradient text-white rounded-2xl text-base font-bold shadow-lg shadow-indigo-500/25 pulse-btn cursor-pointer">
+                    <i class="fa-solid fa-camera mr-2"></i> Open Camera
+                    <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden">
+                </label>
+                <button onclick="closeModal('camera-modal')" class="w-full py-4 bg-darkBg border border-cardBorder text-gray-300 hover:text-white hover:bg-cardBorder rounded-2xl text-base font-bold transition-all">
+                    Cancel
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Firebase v10 SDK via CDN -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    <!-- MANUAL ENTRY MODAL SHEET -->
+    <div id="manual-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-cardBg w-full max-w-md rounded-t-[2rem] p-6 border-t border-cardBorder/50 shadow-2xl transform translate-y-full transition-transform duration-300" id="manual-modal-sheet">
+            <div class="w-12 h-1.5 bg-gray-600 rounded-full mx-auto mb-6"></div>
+            
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-white">Log Food</h3>
+                <button onclick="closeModal('manual-modal')" class="w-8 h-8 rounded-full bg-darkBg border border-cardBorder flex items-center justify-center text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
 
-        // TODO: Replace with your actual Firebase project configuration
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            <div class="flex rounded-xl bg-darkBg p-1 mb-5 border border-cardBorder">
+                <button id="tab-ai-text" onclick="switchManualTab('ai')" class="flex-1 py-2.5 text-xs font-bold rounded-lg bg-cardBorder text-white transition-all shadow-sm">AI Text Estimate</button>
+                <button id="tab-manual" onclick="switchManualTab('manual')" class="flex-1 py-2.5 text-xs font-bold rounded-lg text-gray-400 hover:text-gray-200 transition-all">Exact Entry</button>
+            </div>
+
+            <!-- AI Text Form -->
+            <form id="ai-text-form" onsubmit="handleAiTextSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">What did you eat?</label>
+                    <textarea id="ai-food-input" placeholder="e.g., 2 scrambled eggs, a slice of avocado toast, and a black coffee" required rows="3" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                </div>
+                <button type="submit" class="w-full py-4 brand-gradient text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/25 pulse-btn flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Estimate & Log
+                </button>
+            </form>
+
+            <!-- Exact Manual Form -->
+            <form id="manual-form" onsubmit="handleManualSubmit(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">Food Name</label>
+                    <input type="text" id="food-input" placeholder="e.g., Protein Shake" required autocomplete="off" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-purple-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">Calories</label>
+                        <input type="number" id="cals-input" placeholder="0" required min="0" inputmode="numeric" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">Protein (g)</label>
+                        <input type="number" id="prot-input" placeholder="0" min="0" inputmode="numeric" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">Carbs (g)</label>
+                        <input type="number" id="carb-input" placeholder="0" min="0" inputmode="numeric" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1.5 uppercase font-bold tracking-wider">Fat (g)</label>
+                        <input type="number" id="fat-input" placeholder="0" min="0" inputmode="numeric" class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-xl text-sm text-white focus:outline-none focus:border-purple-500">
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-purple-500/25 pulse-btn">
+                    Save Log
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-darkBg/95 backdrop-blur-xl z-[60] flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="relative w-24 h-24 mb-6">
+            <div class="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center text-indigo-400 text-2xl">
+                <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i>
+            </div>
+        </div>
+        <h3 id="loading-text" class="text-lg font-bold text-white mb-2 tracking-tight">Processing...</h3>
+        <p class="text-sm text-gray-400">Gemini is analyzing your input.</p>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 w-full max-w-md mx-auto inset-x-0 glass-panel border-t border-cardBorder/50 pb-safe pt-2 px-6 z-40">
+        <div class="flex justify-between items-center pb-3">
+            <button onclick="switchTab('home')" class="flex flex-col items-center p-2 group w-16">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-1 group-active:scale-95 transition-all text-indigo-400" id="nav-home">
+                    <i class="fa-solid fa-house"></i>
+                </div>
+                <span class="text-[10px] font-bold text-gray-400">Home</span>
+            </button>
+            
+            <button onclick="switchTab('history')" class="flex flex-col items-center p-2 group w-16">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-1 group-active:scale-95 transition-all text-gray-500" id="nav-history">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <span class="text-[10px] font-bold text-gray-400">History</span>
+            </button>
+            
+            <button onclick="switchTab('settings')" class="flex flex-col items-center p-2 group w-16">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-1 group-active:scale-95 transition-all text-gray-500" id="nav-settings">
+                    <i class="fa-solid fa-gear"></i>
+                </div>
+                <span class="text-[10px] font-bold text-gray-400">Settings</span>
+            </button>
+        </div>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        function safeSetText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = text;
+        }
+        function safeSetClass(id, className) {
+            const el = document.getElementById(id);
+            if (el) el.className = className;
+        }
+        function safeSetStyle(id, prop, val) {
+            const el = document.getElementById(id);
+            if (el) el.style[prop] = val;
+        }
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "mock-key",
+            authDomain: "mock.firebaseapp.com",
+            projectId: "mock-project",
+            storageBucket: "mock.appspot.com",
+            messagingSenderId: "123",
+            appId: "123"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const isMockConfig = firebaseConfig.apiKey === "mock-key";
+        let db = null;
+        let auth = null;
+        let useLocalStorageOnly = isMockConfig;
 
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch (e) {
+            console.warn("Firebase initialization failed. Using LocalStorage mode.");
+            useLocalStorageOnly = true;
+        }
+        
+        let userId = 'local-user';
         const todayStr = new Date().toISOString().split('T')[0];
-        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        safeSetText('header-date', new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
 
-        let totalCalories = 0;
+        let dailyGoal = Number(localStorage.getItem('calorie_goal')) || 2500;
+        let macrosGoal = JSON.parse(localStorage.getItem('macros_goal')) || { p: 150, c: 250, f: 60 };
+        let waterCount = Number(localStorage.getItem('water_' + todayStr)) || 0;
+        
+        safeSetText('goal-cals', dailyGoal);
+        updateMacroGoalUI();
 
-        async function fetchLogs() {
-            const listEl = document.getElementById('log-list');
-            listEl.innerHTML = '<p style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">Loading...</p>';
-            
-            try {
-                const q = query(collection(db, "calorie_logs"), where("date", "==", todayStr));
-                const querySnapshot = await getDocs(q);
-                
-                listEl.innerHTML = '';
-                totalCalories = 0;
+        function updateMacroGoalUI() {
+            safeSetText('prot-text', `0/${macrosGoal.p}g`);
+            safeSetText('carb-text', `0/${macrosGoal.c}g`);
+            safeSetText('fat-text', `0/${macrosGoal.f}g`);
+        }
 
-                if (querySnapshot.empty) {
-                    listEl.innerHTML = '<p style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">No entries yet today.</p>';
-                    document.getElementById('total-cals').innerText = 0;
-                    return;
+        const apiKeyInput = document.getElementById('api-key-input');
+        let savedKey = localStorage.getItem('gemini_api_key') || '';
+        if (apiKeyInput && savedKey) apiKeyInput.value = savedKey;
+
+        window.saveApiKey = function() {
+            if (apiKeyInput && apiKeyInput.value.trim()) {
+                localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+                showToast('API key saved successfully!');
+            }
+        };
+
+        window.switchTab = function(tab) {
+            ['home', 'history', 'settings'].forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const nav = document.getElementById(`nav-${t}`);
+                if(view) view.classList.add('hidden');
+                if(nav) {
+                    nav.classList.remove('text-indigo-400');
+                    nav.classList.add('text-gray-500');
                 }
+            });
+            const activeView = document.getElementById(`view-${tab}`);
+            const activeNav = document.getElementById(`nav-${tab}`);
+            if(activeView) activeView.classList.remove('hidden');
+            if(activeNav) {
+                activeNav.classList.remove('text-gray-500');
+                activeNav.classList.add('text-indigo-400');
+            }
+            if (tab === 'history') fetchHistory();
+        };
 
-                querySnapshot.forEach((documentSnapshot) => {
-                    const data = documentSnapshot.data();
-                    totalCalories += Number(data.calories);
+        window.switchManualTab = function(tab) {
+            const aiForm = document.getElementById('ai-text-form');
+            const manForm = document.getElementById('manual-form');
+            const tabAi = document.getElementById('tab-ai-text');
+            const tabMan = document.getElementById('tab-manual');
+            
+            if (tab === 'ai') {
+                if(aiForm) aiForm.classList.remove('hidden');
+                if(manForm) manForm.classList.add('hidden');
+                if(tabAi) { tabAi.classList.replace('text-gray-400', 'text-white'); tabAi.classList.add('bg-cardBorder'); }
+                if(tabMan) { tabMan.classList.replace('text-white', 'text-gray-400'); tabMan.classList.remove('bg-cardBorder'); }
+            } else {
+                if(manForm) manForm.classList.remove('hidden');
+                if(aiForm) aiForm.classList.add('hidden');
+                if(tabMan) { tabMan.classList.replace('text-gray-400', 'text-white'); tabMan.classList.add('bg-cardBorder'); }
+                if(tabAi) { tabAi.classList.replace('text-white', 'text-gray-400'); tabAi.classList.remove('bg-cardBorder'); }
+            }
+        };
 
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'log-item';
-                    itemEl.innerHTML = `
-                        <div class="log-info">
-                            <span class="food-name">${data.food}</span>
-                            <span class="food-cals">${data.calories} kcal</span>
-                        </div>
-                        <button class="delete-btn" data-id="${documentSnapshot.id}">×</button>
-                    `;
-                    listEl.appendChild(itemEl);
-                });
+        window.openModal = function(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                const sheet = document.getElementById(id + '-sheet');
+                if(sheet) sheet.classList.remove('translate-y-full');
+            }, 10);
+        };
+        
+        window.closeModal = function(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            modal.classList.add('opacity-0');
+            const sheet = document.getElementById(id + '-sheet');
+            if(sheet) sheet.classList.add('translate-y-full');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        };
 
-                document.getElementById('total-cals').innerText = totalCalories;
+        window.calculateAndSaveTDEE = function() {
+            const age = Number(document.getElementById('calc-age')?.value);
+            const gender = document.getElementById('calc-gender')?.value;
+            const weightLbs = Number(document.getElementById('calc-weight')?.value);
+            const heightInches = Number(document.getElementById('calc-height')?.value);
+            const activity = Number(document.getElementById('calc-activity')?.value);
+            const goalType = document.getElementById('calc-goal-type')?.value;
 
-                // Bind delete buttons
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const id = e.target.getAttribute('data-id');
-                        await deleteDoc(doc(db, "calorie_logs", id));
-                        fetchLogs();
-                    });
-                });
+            if (!age || !weightLbs || !heightInches) {
+                showToast('Please fill out all metric fields.'); return;
+            }
 
-            } catch (error) {
-                console.error("Error fetching logs: ", error);
-                listEl.innerHTML = '<p style="text-align: center; color: #ff5555; font-size: 0.9rem;">Error loading data.</p>';
+            const weightKg = weightLbs * 0.453592;
+            const heightCm = heightInches * 2.54;
+            let bmr = (10 * weightKg) + (6.25 * heightCm) - (5 * age);
+            bmr += (gender === 'male' ? 5 : -161);
+            let tdee = Math.round(bmr * activity);
+            if (goalType === 'lose') tdee -= 500;
+            if (goalType === 'gain') tdee += 300;
+
+            dailyGoal = Math.max(1200, tdee);
+            
+            macrosGoal = {
+                p: Math.round((dailyGoal * 0.3) / 4),
+                c: Math.round((dailyGoal * 0.5) / 4),
+                f: Math.round((dailyGoal * 0.2) / 9)
+            };
+
+            localStorage.setItem('calorie_goal', dailyGoal);
+            localStorage.setItem('macros_goal', JSON.stringify(macrosGoal));
+            
+            safeSetText('goal-cals', dailyGoal);
+            updateMacroGoalUI();
+            fetchLogs();
+            switchTab('home');
+            showToast(`Goal updated to ${dailyGoal} kcal!`);
+        };
+
+        async function initApp() {
+            if (!useLocalStorageOnly && auth) {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                        userId = cred.user.uid;
+                    } else {
+                        const cred = await signInAnonymously(auth);
+                        userId = cred.user.uid;
+                    }
+                    safeSetText('sync-status', 'Online');
+                } catch (err) {
+                    console.warn("Auth/Network unreachable. Switching to offline LocalStorage mode.");
+                    useLocalStorageOnly = true;
+                    safeSetText('sync-status', 'Offline');
+                    safeSetClass('sync-status', 'text-[10px] font-bold px-2 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20');
+                }
+            } else {
+                safeSetText('sync-status', 'Local');
+                safeSetClass('sync-status', 'text-[10px] font-bold px-2 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20');
+            }
+            fetchLogs();
+            fetchWater();
+        }
+
+        async function fetchWater() {
+            if (!useLocalStorageOnly && db) {
+                try {
+                    const waterRef = doc(db, 'artifacts', appId, 'users', userId, 'daily_stats', todayStr);
+                    const snap = await getDoc(waterRef);
+                    if (snap.exists()) {
+                        waterCount = snap.data().water || 0;
+                        localStorage.setItem('water_' + todayStr, waterCount);
+                        renderWaterGlasses();
+                        return;
+                    }
+                } catch (e) {
+                    console.warn("Firestore water fetch failed, using local storage");
+                }
+            }
+            waterCount = Number(localStorage.getItem('water_' + todayStr)) || 0;
+            renderWaterGlasses();
+        }
+
+        window.toggleWater = async function(idx) {
+            if (idx === waterCount && waterCount > 0) {
+                waterCount--;
+            } else {
+                waterCount = idx;
+            }
+            localStorage.setItem('water_' + todayStr, waterCount);
+            renderWaterGlasses();
+            
+            if (!useLocalStorageOnly && db) {
+                try {
+                    const waterRef = doc(db, 'artifacts', appId, 'users', userId, 'daily_stats', todayStr);
+                    await setDoc(waterRef, { water: waterCount, date: todayStr }, { merge: true });
+                } catch (e) { console.warn("Cloud water sync skipped"); }
+            }
+        };
+
+        function renderWaterGlasses() {
+            safeSetText('water-count', `${waterCount} / 8`);
+            const container = document.getElementById('water-glasses');
+            if(!container) return;
+            container.innerHTML = '';
+            for (let i = 1; i <= 8; i++) {
+                const isFilled = i <= waterCount;
+                const glass = document.createElement('button');
+                glass.onclick = () => toggleWater(i);
+                glass.className = `flex-1 aspect-square max-w-[40px] rounded-xl flex items-center justify-center transition-all duration-300 ${isFilled ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]' : 'bg-darkBg/60 text-gray-600 border border-cardBorder hover:border-cyan-500/30'}`;
+                glass.innerHTML = `<i class="fa-solid fa-glass-water"></i>`;
+                container.appendChild(glass);
             }
         }
 
-        document.getElementById('log-form').addEventListener('submit', async (e) => {
+        let currentTotals = { cals: 0, p: 0, c: 0, f: 0 };
+
+        async function fetchLogs() {
+            const listEl = document.getElementById('log-list');
+            if(listEl) listEl.innerHTML = '<div class="text-center py-6"><div class="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div></div>';
+            
+            let logs = [];
+            if (!useLocalStorageOnly && db) {
+                try {
+                    const qSnapshot = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'calorie_logs'));
+                    qSnapshot.forEach((docSnap) => {
+                        logs.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                    localStorage.setItem('cached_calorie_logs', JSON.stringify(logs));
+                } catch (err) {
+                    console.warn("Firestore fetch failed, reading from local cache");
+                    logs = JSON.parse(localStorage.getItem('cached_calorie_logs') || '[]');
+                }
+            } else {
+                logs = JSON.parse(localStorage.getItem('local_calorie_logs') || '[]');
+            }
+
+            renderLogList(logs);
+        }
+
+        function renderLogList(logs) {
+            const listEl = document.getElementById('log-list');
+            if(!listEl) return;
+            
+            listEl.innerHTML = '';
+            currentTotals = { cals: 0, p: 0, c: 0, f: 0 };
+            let todayLogs = [];
+
+            logs.forEach((data) => {
+                if (data.date === todayStr) {
+                    todayLogs.push(data);
+                    currentTotals.cals += (Number(data.calories) || 0);
+                    currentTotals.p += (Number(data.protein) || 0);
+                    currentTotals.c += (Number(data.carbs) || 0);
+                    currentTotals.f += (Number(data.fat) || 0);
+                }
+            });
+
+            todayLogs.sort((a, b) => b.timestamp - a.timestamp);
+
+            if (todayLogs.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-10 bg-darkBg/40 rounded-3xl border border-cardBorder border-dashed">
+                        <div class="w-12 h-12 rounded-full bg-cardBorder flex items-center justify-center mx-auto mb-3 text-gray-500">
+                            <i class="fa-solid fa-utensils"></i>
+                        </div>
+                        <p class="text-sm text-gray-300 font-bold">No food logged yet</p>
+                        <p class="text-xs text-gray-500 mt-1 font-medium">Use the buttons above to add a meal.</p>
+                    </div>
+                `;
+            } else {
+                todayLogs.forEach((data) => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'flex items-center justify-between p-4 rounded-2xl bg-cardBg border border-cardBorder hover:border-indigo-500/30 transition-all shadow-sm';
+                    itemEl.innerHTML = `
+                        <div class="flex items-center gap-3.5 overflow-hidden">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-fire text-sm"></i>
+                            </div>
+                            <div class="truncate">
+                                <span class="font-bold text-sm text-gray-100 block truncate">${data.food}</span>
+                                <div class="flex items-center gap-1.5 mt-1 text-[10px] font-semibold text-gray-400 tracking-wide uppercase">
+                                    <span class="text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">${data.calories} kcal</span>
+                                    <span>P:${data.protein || 0}</span> 
+                                    <span>C:${data.carbs || 0}</span> 
+                                    <span>F:${data.fat || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="deleteLogEntry('${data.id}')" class="w-9 h-9 shrink-0 rounded-xl bg-rose-500/5 text-rose-400 flex items-center justify-center hover:bg-rose-500/20 transition-colors ml-2">
+                            <i class="fa-solid fa-trash-can text-[11px]"></i>
+                        </button>
+                    `;
+                    listEl.appendChild(itemEl);
+                });
+            }
+
+            safeSetText('log-count', `${todayLogs.length} items`);
+            updateProgress(currentTotals);
+        }
+
+        async function fetchHistory() {
+            const historyList = document.getElementById('history-list');
+            if(!historyList) return;
+            
+            historyList.innerHTML = '<div class="text-center py-6 text-gray-400 text-sm"><i class="fa-solid fa-spinner fa-spin mb-2"></i><br>Loading history...</div>';
+
+            let logs = [];
+            if (!useLocalStorageOnly && db) {
+                try {
+                    const qSnapshot = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'calorie_logs'));
+                    qSnapshot.forEach((docSnap) => {
+                        logs.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                } catch (err) {
+                    logs = JSON.parse(localStorage.getItem('cached_calorie_logs') || localStorage.getItem('local_calorie_logs') || '[]');
+                }
+            } else {
+                logs = JSON.parse(localStorage.getItem('local_calorie_logs') || '[]');
+            }
+
+            let daysMap = {};
+            logs.forEach((data) => {
+                if (!daysMap[data.date]) {
+                    daysMap[data.date] = { cals: 0, p: 0, count: 0 };
+                }
+                daysMap[data.date].cals += (Number(data.calories) || 0);
+                daysMap[data.date].p += (Number(data.protein) || 0);
+                daysMap[data.date].count += 1;
+            });
+
+            historyList.innerHTML = '';
+            const sortedDates = Object.keys(daysMap).sort((a, b) => new Date(b) - new Date(a));
+
+            if (sortedDates.length === 0) {
+                historyList.innerHTML = '<p class="text-center text-xs text-gray-500 py-4">No history data found.</p>';
+                return;
+            }
+
+            sortedDates.forEach(date => {
+                const stat = daysMap[date];
+                const isToday = date === todayStr;
+                
+                const el = document.createElement('div');
+                el.className = `p-4 rounded-2xl ${isToday ? 'bg-indigo-900/10 border-indigo-500/30' : 'bg-cardBg border-cardBorder'} border flex items-center justify-between mb-3`;
+                
+                const dateObj = new Date(date + 'T12:00:00'); 
+                const dateLabel = isToday ? 'Today' : dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+                el.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl ${isToday ? 'bg-indigo-500/20 text-indigo-400' : 'bg-darkBg text-gray-400'} border border-cardBorder flex items-center justify-center">
+                            <i class="fa-solid fa-calendar-day"></i>
+                        </div>
+                        <div>
+                            <span class="text-sm font-bold block ${isToday ? 'text-indigo-100' : 'text-gray-200'}">${dateLabel}</span>
+                            <span class="text-[11px] text-gray-400 font-medium">${stat.cals} kcal • P: ${stat.p}g • ${stat.count} items</span>
+                        </div>
+                    </div>
+                    ${isToday ? `<span class="text-[10px] font-bold px-2 py-1 rounded bg-indigo-500/20 text-indigo-400 uppercase tracking-wider">Active</span>` : ''}
+                `;
+                historyList.appendChild(el);
+            });
+        }
+
+        function updateProgress(totals) {
+            safeSetText('total-cals', totals.cals);
+            
+            const remaining = dailyGoal - totals.cals;
+            const progressPercent = Math.min(100, Math.max(0, Math.round((totals.cals / dailyGoal) * 100)));
+            safeSetStyle('calorie-progress-bar', 'width', `${progressPercent}%`);
+
+            if (remaining >= 0) {
+                safeSetClass('cals-left-label', 'text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm');
+                safeSetText('cals-left-label', `${remaining} kcal left`);
+            } else {
+                safeSetClass('cals-left-label', 'text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 shadow-sm');
+                safeSetText('cals-left-label', `${Math.abs(remaining)} kcal over`);
+            }
+
+            const pPct = Math.min(100, (totals.p / macrosGoal.p) * 100) || 0;
+            const cPct = Math.min(100, (totals.c / macrosGoal.c) * 100) || 0;
+            const fPct = Math.min(100, (totals.f / macrosGoal.f) * 100) || 0;
+
+            safeSetText('prot-text', `${totals.p}/${macrosGoal.p}g`);
+            safeSetStyle('prot-bar', 'width', `${pPct}%`);
+
+            safeSetText('carb-text', `${totals.c}/${macrosGoal.c}g`);
+            safeSetStyle('carb-bar', 'width', `${cPct}%`);
+
+            safeSetText('fat-text', `${totals.f}/${macrosGoal.f}g`);
+            safeSetStyle('fat-bar', 'width', `${fPct}%`);
+        }
+
+        window.deleteLogEntry = async function(id) {
+            if (!useLocalStorageOnly && db) {
+                try {
+                    await deleteDoc(doc(db, "artifacts", appId, "users", userId, "calorie_logs", id));
+                } catch (e) { console.warn("Cloud delete failed"); }
+            }
+            
+            let localLogs = JSON.parse(localStorage.getItem('local_calorie_logs') || '[]');
+            localLogs = localLogs.filter(item => item.id !== id);
+            localStorage.setItem('local_calorie_logs', JSON.stringify(localLogs));
+            
+            fetchLogs();
+            showToast("Entry deleted.");
+        };
+
+        window.handleManualSubmit = async function(e) {
             e.preventDefault();
-            const food = document.getElementById('food-input').value;
-            const calories = Number(document.getElementById('cals-input').value);
+            const foodEl = document.getElementById('food-input');
+            const calsEl = document.getElementById('cals-input');
+            if(!foodEl || !calsEl) return;
+
+            const food = foodEl.value.trim();
+            const calories = Number(calsEl.value);
+            const protein = Number(document.getElementById('prot-input')?.value) || 0;
+            const carbs = Number(document.getElementById('carb-input')?.value) || 0;
+            const fat = Number(document.getElementById('fat-input')?.value) || 0;
+
+            if (!food || isNaN(calories)) return;
+
+            const newEntry = {
+                id: 'local_' + Date.now(),
+                food, calories, protein, carbs, fat,
+                date: todayStr,
+                timestamp: Date.now()
+            };
+
+            if (!useLocalStorageOnly && db) {
+                try {
+                    await addDoc(collection(db, "artifacts", appId, "users", userId, "calorie_logs"), newEntry);
+                } catch (err) { console.warn("Cloud add failed, saving locally"); }
+            }
+
+            let localLogs = JSON.parse(localStorage.getItem('local_calorie_logs') || '[]');
+            localLogs.push(newEntry);
+            localStorage.setItem('local_calorie_logs', JSON.stringify(localLogs));
+
+            e.target.reset();
+            closeModal('manual-modal');
+            fetchLogs();
+            showToast("Manual entry added!");
+        };
+
+        window.handleAiTextSubmit = async function(e) {
+            e.preventDefault();
+            const inputEl = document.getElementById('ai-food-input');
+            if(!inputEl) return;
+            
+            const desc = inputEl.value.trim();
+            if (!desc) return;
+            
+            const apiKey = localStorage.getItem('gemini_api_key');
+            if (!apiKey) {
+                closeModal('manual-modal');
+                switchTab('settings');
+                showToast('Please enter Gemini API Key first.');
+                return;
+            }
+
+            closeModal('manual-modal');
+            const overlay = document.getElementById('loading-overlay');
+            if(overlay) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            }
+            safeSetText('loading-text', 'AI is estimating macros...');
 
             try {
-                await addDoc(collection(db, "calorie_logs"), {
-                    food,
-                    calories,
-                    date: todayStr,
-                    timestamp: Date.now()
+                const prompt = `Estimate the nutrition for this meal: "${desc}". Return ONLY a strict JSON object with: 'food' (short descriptive name), 'calories' (integer), 'protein' (g, integer), 'carbs' (g, integer), 'fat' (g, integer). No markdown formatting or extra text.`;
+                
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
                 });
-                document.getElementById('food-input').value = '';
-                document.getElementById('cals-input').value = '';
-                fetchLogs();
-            } catch (error) {
-                console.error("Error adding document: ", error);
-            }
-        });
 
-        fetchLogs();
+                const result = await response.json();
+                const textResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!textResponse) throw new Error("No AI response.");
+
+                const cleanedJSON = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+                const parsed = JSON.parse(cleanedJSON);
+
+                if (parsed.food && typeof parsed.calories !== 'undefined') {
+                    const newEntry = {
+                        id: 'local_' + Date.now(),
+                        food: parsed.food,
+                        calories: Number(parsed.calories),
+                        protein: Number(parsed.protein || 0),
+                        carbs: Number(parsed.carbs || 0),
+                        fat: Number(parsed.fat || 0),
+                        date: todayStr,
+                        timestamp: Date.now()
+                    };
+
+                    if (!useLocalStorageOnly && db) {
+                        try {
+                            await addDoc(collection(db, "artifacts", appId, "users", userId, "calorie_logs"), newEntry);
+                        } catch (err) {}
+                    }
+
+                    let localLogs = JSON.parse(localStorage.getItem('local_calorie_logs') || '[]');
+                    localLogs.push(newEntry);
+                    localStorage.setItem('local_calorie_logs', JSON.stringify(localLogs));
+
+                    inputEl.value = '';
+                    fetchLogs();
+                    showToast(`Logged: ${parsed.food} (${parsed.calories} kcal)`);
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Failed to parse AI estimate.");
+            } finally {
+                if(overlay) {
+                    overlay.classList.add('opacity-0');
+                    setTimeout(() => overlay.classList.add('hidden'), 300);
+                }
+            }
+        };
+
+        const cameraInput = document.getElementById('camera-input');
+        if (cameraInput) {
+            cameraInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const apiKey = localStorage.getItem('gemini_api_key');
+                if (!apiKey) {
+                    closeModal('camera-modal');
+                    switchTab('settings');
+                    showToast('Please enter Gemini API Key first.');
+                    return;
+                }
+
+                closeModal('camera-modal');
+                const overlay = document.getElementById('loading-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden');
+                    setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+                }
+                safeSetText('loading-text', 'Analyzing food with Vision AI...');
+
+                try {
+                    const base64Data = await fileToBase64(file);
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                    
+                    const prompt = `Analyze this food image. Estimate its nutritional value. Return ONLY a strict JSON object with: 'food' (short descriptive name), 'calories' (integer), 'protein' (g, int), 'carbs' (g, int), 'fat' (g, int). No Markdown.`;
+
+                    const payload = {
+                        contents: [{
+                            role: 'user',
+                            parts: [
+                                { text: prompt },
+                                { inlineData: { mimeType: file.type || "image/jpeg", data: base64Data } }
+                            ]
+                        }]
+                    };
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+                    const textResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (!textResponse) throw new Error("No response");
+
+                    const cleanedJSON = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const parsed = JSON.parse(cleanedJSON);
+
+                    if (parsed.food && typeof parsed.calories !== 'undefined') {
+                        const newEntry = {
+                            id: 'local_' + Date.now(),
+                            food: parsed.food,
+                            calories: Number(parsed.calories),
+                            protein: Number(parsed.protein || 0),
+                            carbs: Number(parsed.carbs || 0),
+                            fat: Number(parsed.fat || 0),
+                            date: todayStr,
+                            timestamp: Date.now()
+                        };
+
+                        if (!useLocalStorageOnly && db) {
+                            try {
+                                await addDoc(collection(db, "artifacts", appId, "users", userId, "calorie_logs"), newEntry);
+                            } catch (err) {}
+                        }
+
+                        let localLogs = JSON.parse(localStorage.getItem('local_calorie_logs') || '[]');
+                        localLogs.push(newEntry);
+                        localStorage.setItem('local_calorie_logs', JSON.stringify(localLogs));
+
+                        fetchLogs();
+                        showToast(`Logged: ${parsed.food} (${parsed.calories} kcal)`);
+                    } else {
+                        throw new Error("Bad JSON structure");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast("Failed to analyze image.");
+                } finally {
+                    if(overlay) {
+                        overlay.classList.add('opacity-0');
+                        setTimeout(() => overlay.classList.add('hidden'), 300);
+                    }
+                    cameraInput.value = '';
+                }
+            });
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.toString().replace(/^data:(.*,)?/, ''));
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-6 left-1/2 -translate-x-1/2 z-[100] bg-gray-900 border border-indigo-500/40 px-5 py-3 rounded-2xl text-xs font-bold text-white shadow-2xl shadow-indigo-500/20 transform transition-all duration-300 opacity-0 -translate-y-4';
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', '-translate-y-4');
+                toast.classList.add('opacity-100', 'translate-y-0');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', '-translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        initApp();
     </script>
 </body>
 </html>
